@@ -403,13 +403,25 @@ function lvBookmarklet(BASE){
     try{
       var q=function(s){return document.querySelector(s)};
       var meta=function(n){var e=q('meta[property="'+n+'"]');return e?e.content:''};
-      var name='',img='',a=q('img.avatar-image');
-      if(isC&&a){name=a.alt||'';img=a.src}
-      if(isC&&!name){var h=q('h2.chakra-heading');if(h)name=h.textContent.trim()}
-      if(!name)name=(meta('og:title')||document.title).replace(/^janitor\s*-\s*/i,'').trim();
-      if(!img){var best=0;document.querySelectorAll('main img').forEach(function(i){if(/janitorai\.com/.test(i.src)&&!/logo|star|hotlink-ok|media-approved/.test(i.src)&&i.naturalWidth>best){best=i.naturalWidth;img=i.src}})}
-      if(!img)img=meta('og:image');
-      if(img)img=img.replace(/([?&])width=\d+/,'$1width=400');
+      var name='',img='';
+      if(isU){
+        var t=q('h2.profile-title-heading')||q('h2.pp-uc-title');
+        if(t)name=t.textContent;
+        if(!name)name=meta('og:title')||document.title;
+        name=name.replace(/^\s*janitor\s*-\s*/i,'').replace(/^\s*profile of\s*/i,'').replace(/^\s*@+/,'').trim();
+        var pa=q('img.profile-avatar')||q('img.pp-uc-avatar');
+        if(pa)img=pa.src;
+        if(!img)document.querySelectorAll('img').forEach(function(i){if(!img&&i.src.indexOf('janitorai.com/avatars/')>-1)img=i.src});
+        if(!img)img=meta('og:image');
+      }else{
+        var a=q('img.avatar-image');
+        if(a){name=a.alt||'';img=a.src}
+        if(!name){var h=q('h2.chakra-heading');if(h)name=h.textContent.trim()}
+        if(!name)name=(meta('og:title')||document.title).replace(/^janitor\s*-\s*/i,'').trim();
+        if(!img){var best=0;document.querySelectorAll('main img').forEach(function(i){if(/janitorai\.com/.test(i.src)&&!/logo|star|hotlink-ok|media-approved/.test(i.src)&&i.naturalWidth>best){best=i.naturalWidth;img=i.src}})}
+        if(!img)img=meta('og:image');
+        if(img)img=img.replace(/([?&])width=\d+/,'$1width=400');
+      }
       w.location.href=BASE+'#add='+encodeURIComponent(JSON.stringify({u:location.origin+P,n:name,i:img,t:isU?'u':'c'}));
     }catch(e){alert('Link Vault bookmarklet error: '+e.message)}
   })();
