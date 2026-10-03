@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self' https://api.github.com; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Link Vault</title>
+<style>
+*{box-sizing:border-box}
+:root{--bg:#f6f4ff;--card:#fff;--ink:#1f1b2e;--mute:#7a7692;--line:#e8e4f7;--acc:#7c5cff;--acc2:#ff6fae;--star:#ffb400;--off:#d9d4ee;--sh:0 8px 28px rgba(90,70,170,.10);--inp:#faf9ff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14121f;--card:#1e1a2f;--ink:#f1eefc;--mute:#9d98b8;--line:#2e2946;--off:#3a3558;--sh:0 8px 28px rgba(0,0,0,.4);--inp:#171428}}
+:root[data-theme="dark"]{--bg:#14121f;--card:#1e1a2f;--ink:#f1eefc;--mute:#9d98b8;--line:#2e2946;--off:#3a3558;--sh:0 8px 28px rgba(0,0,0,.4);--inp:#171428}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100%;color:var(--ink);font:15px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Helvetica,Arial,sans-serif;background:radial-gradient(900px 420px at 8% -8%,rgba(124,92,255,.20),transparent),radial-gradient(700px 360px at 100% 0,rgba(255,111,174,.15),transparent),var(--bg);background-color:var(--bg)}
+.wrap{max-width:760px;margin:0 auto;padding:30px 18px 50px}
+h1{margin:0;font-size:32px;letter-spacing:-.02em;background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--mute);margin:2px 0 22px}
+h2{margin:0 0 4px;font-size:18px}
+.nav{display:flex;gap:6px;padding:5px;background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--sh);margin-bottom:18px}
+.nav button{flex:1;border:0;background:transparent;color:var(--mute);font:600 14px inherit;font-family:inherit;padding:10px 8px;border-radius:12px;cursor:pointer;transition:.15s}
+.nav button:hover{color:var(--ink)}
+.nav button.on{color:#fff;background:linear-gradient(135deg,var(--acc),var(--acc2));box-shadow:0 4px 14px rgba(124,92,255,.35)}
+.nav i,.pill i,.chip i{font-style:normal;opacity:.7;font-weight:500;margin-left:4px}
+.pills{display:flex;gap:8px;margin-bottom:14px}
+.pill,.chip{border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 13px inherit;font-family:inherit;padding:8px 14px;border-radius:999px;cursor:pointer;transition:.15s}
+.pill.on,.chip.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 18px}
+.chip{padding:10px 16px;font-size:14px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--sh);margin-bottom:16px}
+.row{display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.row.between{align-items:center;justify-content:space-between;margin:0}
+input,select{font:inherit;color:var(--ink);background:var(--inp);border:1px solid var(--line);border-radius:12px;padding:10px 12px;outline:none;min-width:0}
+input:focus,select:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(124,92,255,.18)}
+.row input{flex:1 1 220px}
+.primary{border:0;color:#fff;font:700 14px inherit;font-family:inherit;padding:11px 20px;border-radius:12px;cursor:pointer;background:linear-gradient(135deg,var(--acc),var(--acc2));box-shadow:0 4px 14px rgba(124,92,255,.3);transition:.15s;text-decoration:none;display:inline-block}
+.primary:hover{transform:translateY(-1px)}.primary:disabled{opacity:.6;cursor:default;transform:none}
+.roll{font-size:16px;padding:13px 28px}
+.tools{display:flex;gap:10px;margin-bottom:12px}.tools input{flex:1}
+.card{display:flex;align-items:center;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-bottom:10px;box-shadow:var(--sh);transition:.15s}
+.card:hover{transform:translateY(-1px)}
+.av{flex:none;width:44px;height:44px;border-radius:13px;display:grid;place-items:center;font-weight:800;font-size:18px;color:#fff;background:linear-gradient(135deg,hsl(var(--h) 70% 58%),hsl(calc(var(--h) + 40) 75% 62%))}
+.mid{flex:1;min-width:0}
+.t{display:block;font-weight:700;color:var(--ink);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t:hover{color:var(--acc)}
+.h{color:var(--mute);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stars{display:flex;gap:1px;margin-top:3px}
+.st{border:0;background:none;padding:0 1px;font-size:19px;line-height:1;color:var(--off);cursor:pointer;transition:.1s}
+.st.on{color:var(--star)}.st:hover{transform:scale(1.2)}
+.stars.big .st{font-size:28px}
+.act{display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.mini{border:1px solid var(--line);background:var(--inp);color:var(--mute);font:600 12px inherit;font-family:inherit;padding:5px 10px;border-radius:9px;cursor:pointer}
+.mini:hover{color:var(--ink)}.mini.danger{background:#ff4d6d;border-color:#ff4d6d;color:#fff}
+.empty{text-align:center;color:var(--mute);padding:34px 10px;border:1.5px dashed var(--line);border-radius:16px}
+.lbl{color:var(--acc);font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:.08em;margin:6px 2px}
+#res .card{animation:pop .25s ease;padding:18px}#res .av{width:56px;height:56px;font-size:24px}
+#res .t{font-size:18px}.go{margin-top:6px}
+@keyframes pop{from{transform:scale(.96);opacity:.5}to{transform:none;opacity:1}}
+.foot{text-align:center;color:var(--mute);font-size:12px;margin-top:26px}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;opacity:0;pointer-events:none;transition:.2s}
+#toast.show{opacity:1}
+.note{color:var(--mute);font-size:13px;margin:8px 2px 12px}.err{color:#ff4d6d;font-weight:600;margin-top:12px;min-height:1em}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.04em}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🔗 Link Vault</h1>
+  <div class="sub">Your personal collection of characters &amp; creators.</div>
+  <div id="gate"></div>
+  <div id="appbody" hidden>
+    <div class="nav" id="nav"></div>
+    <div id="view"></div>
+    <div class="foot"><div id="status"></div><div style="margin-top:10px"><button class="mini" id="lock">Lock now</button> <button class="mini" id="forget">Forget this device</button></div></div>
+  </div>
+</div>
+<div id="toast"></div>
+<script>
+(function(){
+const LS='linkvault.v1';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36);
+const host=u=>{try{return new URL(u).hostname.replace(/^www\./,'')}catch(e){return u}};
+const hue=s=>{let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))%360;return h};
+const NAMES={'characters:current':'Characters · Current','characters:favorite':'Characters · Favorite','creators':'Creators'};
+let S={items:[],updated:0};
+const ui={tab:'characters',sub:'current',sel:new Set(Object.keys(NAMES)),q:'',sort:'new',ns:0,pick:null,del:null,msg:''};
+const bucket=i=>i.sec==='characters'?'characters:'+i.sub:'creators';
+const curBucket=()=>ui.tab==='characters'?'characters:'+ui.sub:'creators';
+const count=b=>S.items.filter(i=>bucket(i)===b).length;
+const find=id=>S.items.find(i=>i.id===id);
+const safe=u=>/^https?:\/\//i.test(u)?esc(u):'#';
+const title=i=>i.title||host(i.url);
+const sorters={new:(a,b)=>b.added-a.added,stars:(a,b)=>b.stars-a.stars||b.added-a.added,name:(a,b)=>title(a).localeCompare(title(b))};
+
+/* ===== CORE-START: encryption + GitHub storage ===== */
+const enc=new TextEncoder(),dec=new TextDecoder();
+const ITER=1000000,PAD=4096;
+const st={repo:'',token:'',key:null,salt:'',iter:ITER,sha:'',canWrite:false,file:null};
+const b64=u=>{let s='';for(let i=0;i<u.length;i+=8192)s+=String.fromCharCode.apply(null,u.subarray(i,i+8192));return btoa(s)};
+const unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const rnd=n=>crypto.getRandomValues(new Uint8Array(n));
+async function derive(pass,salt,iter){
+  const m=await crypto.subtle.importKey('raw',enc.encode(pass.normalize('NFKC')),'PBKDF2',false,['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2',hash:'SHA-512',salt,iterations:iter},m,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+}
+async function encB(key,bytes,a){
+  const iv=rnd(12);
+  const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv,additionalData:enc.encode(a)},key,bytes));
+  return b64(iv)+'.'+b64(ct);
+}
+async function decB(key,s,a){
+  const p=s.split('.');
+  return new Uint8Array(await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(p[0]),additionalData:enc.encode(a)},key,unb64(p[1])));
+}
+const hdr=f=>'lv1|'+f.iter+'|'+f.salt;
+function pad(obj){ // pad to 4 KB blocks so the file size doesn't reveal how many links you have
+  const p=enc.encode(JSON.stringify(obj)),n=Math.ceil((p.length+1)/PAD)*PAD,o=new Uint8Array(n).fill(32);
+  o.set(p);return o;
+}
+async function sealFile(obj){
+  const f={v:1,kdf:'PBKDF2-SHA512',iter:st.iter,salt:st.salt};
+  f.data=await encB(st.key,pad(obj),hdr(f));
+  return f;
+}
+async function openFile(f,key){
+  if(!f||f.v!==1||!f.data||!f.salt||!(f.iter>=600000&&f.iter<=10000000))throw new Error('bad file');
+  const d=JSON.parse(dec.decode(await decB(key,f.data,hdr(f))));
+  return {items:Array.isArray(d.items)?d.items:[],updated:+d.updated||0};
+}
+const GH=(path,o)=>fetch('https://api.github.com/repos/'+st.repo+'/contents/'+path,Object.assign({},o,{headers:{Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28',Authorization:'Bearer '+st.token,'Content-Type':'application/json'}}));
+async function fetchRemote(){
+  const r=await GH('vault.json',{cache:'no-store'});
+  if(r.status===404)return null;
+  if(!r.ok)throw new Error('GitHub '+r.status);
+  const j=await r.json(),f=JSON.parse(atob(j.content.replace(/\s/g,'')));
+  if(f.salt!==st.salt)throw new Error('different vault');
+  return {sha:j.sha,data:await openFile(f,st.key)};
+}
+let dirty=false,timer=null,saving=Promise.resolve();
+const stat=t=>{const s=$('#status');if(s)s.textContent=t};
+function save(){
+  S.updated=Date.now();
+  if(!st.canWrite)return;
+  dirty=true;stat('Saving…');clearTimeout(timer);
+  timer=setTimeout(()=>{saving=saving.then(push)},600);
+}
+async function push(){
+  if(!st.canWrite||!st.key)return;
+  for(let n=0;n<3;n++){
+    try{
+      const body={message:'vault update',content:btoa(JSON.stringify(await sealFile(S)))};
+      if(st.sha)body.sha=st.sha;
+      const r=await GH('vault.json',{method:'PUT',body:JSON.stringify(body)});
+      if(r.ok){st.sha=(await r.json()).content.sha;dirty=false;stat('Encrypted & saved to GitHub ✓');return}
+      if(r.status===409||r.status===422){ // changed on another device: merge, then retry
+        const rem=await fetchRemote();
+        if(rem){const have=new Set(S.items.map(i=>i.id));rem.data.items.forEach(i=>{if(!have.has(i.id))S.items.push(i)});st.sha=rem.sha;render();continue}
+      }
+      throw new Error('GitHub '+r.status);
+    }catch(e){break}
+  }
+  stat('⚠️ Couldn’t save to GitHub — it will retry on your next change');
+}
+/* ===== CORE-END ===== */
+
+/* ---------- views ---------- */
+const stars=(n,id)=>[1,2,3,4,5].map(k=>`<button class="st${k<=n?' on':''}" data-star="${k}" data-id="${id}" aria-label="${k} star${k>1?'s':''}">★</button>`).join('');
+function card(i){
+  const h=host(i.url),isC=i.sec==='characters';
+  return `<article class="card"><div class="av" style="--h:${hue(h)}">${esc(title(i)[0].toUpperCase())}</div>
+  <div class="mid"><a class="t" href="${safe(i.url)}" target="_blank" rel="noopener noreferrer">${esc(title(i))}</a><div class="h">${esc(h)}</div><div class="stars">${stars(i.stars,i.id)}</div></div>
+  <div class="act">${isC?`<button class="mini" data-move="${i.id}">${i.sub==='current'?'♥ Favorite':'↩ Current'}</button>`:''}
+  <button class="mini${ui.del===i.id?' danger':''}" data-del="${i.id}">${ui.del===i.id?'Sure?':'Delete'}</button></div></article>`;
+}
+function renderNav(){
+  $('#nav').innerHTML=[['characters','Characters',count('characters:current')+count('characters:favorite')],['creators','Creators',count('creators')],['random','🎲 Random','']]
+    .map(([k,l,n])=>`<button data-tab="${k}" class="${ui.tab===k?'on':''}">${l}${n!==''?`<i>${n}</i>`:''}</button>`).join('');
+}
+function renderPills(){
+  const p=$('#pills');if(!p)return;
+  p.innerHTML=['current','favorite'].map(s=>`<button class="pill${ui.sub===s?' on':''}" data-sub="${s}">${s==='current'?'Current':'Favorite'}<i>${count('characters:'+s)}</i></button>`).join('');
+}
+function renderList(){
+  const el=$('#list');if(!el)return;
+  const q=ui.q.toLowerCase(),b=curBucket();
+  const rows=S.items.filter(i=>bucket(i)===b&&(!q||(i.title+' '+i.url).toLowerCase().includes(q))).sort(sorters[ui.sort]);
+  el.innerHTML=rows.length?rows.map(card).join(''):`<div class="empty">${q?'No matches.':'Nothing here yet — paste a link above.'}</div>`;
+}
+function renderBrowse(){
+  const isC=ui.tab==='characters';
+  $('#view').innerHTML=`${isC?'<div class="pills" id="pills"></div>':''}
+  <section class="panel">
+    <div class="row"><input id="u" placeholder="Paste a link…" autocomplete="off" autocapitalize="off" spellcheck="false"><input id="n" placeholder="Name (optional)" autocomplete="off"></div>
+    <div class="row between"><div class="stars big" id="ns">${stars(ui.ns,'new')}</div><button class="primary" id="add">Add to ${NAMES[curBucket()]}</button></div>
+  </section>
+  <div class="tools"><input id="q" placeholder="Search…" value="${esc(ui.q)}"><select id="so"><option value="new">Newest</option><option value="stars">Top rated</option><option value="name">A–Z</option></select></div>
+  <div id="list"></div>`;
+  $('#so').value=ui.sort;
+  renderPills();renderList();
+}
+const resHtml=()=>{
+  const it=find(ui.pick);
+  if(ui.msg)return `<div class="empty">${esc(ui.msg)}</div>`;
+  if(!it)return '<div class="empty">Hit Roll to get a surprise link ✨</div>';
+  return `<div class="lbl">${NAMES[bucket(it)]}</div>${card(it)}<a class="primary go" href="${safe(it.url)}" target="_blank" rel="noopener noreferrer">Open link ↗</a>`;
+};
+const showRes=()=>{const r=$('#res');if(r)r.innerHTML=resHtml()};
+function renderRandom(){
+  $('#view').innerHTML=`<section class="panel"><h2>Random pick</h2><div style="color:var(--mute)">Choose where to pull from — select one or several.</div>
+  <div class="chips">${Object.keys(NAMES).map(k=>`<button class="chip${ui.sel.has(k)?' on':''}" data-sel="${k}">${NAMES[k]}<i>${count(k)}</i></button>`).join('')}</div>
+  <button class="primary roll" id="roll">🎲 Roll</button></section><div id="res">${resHtml()}</div>`;
+}
+function render(){renderNav();ui.tab==='random'?renderRandom():renderBrowse()}
+const refresh=()=>ui.tab==='random'?showRes():renderList();
+
+/* ---------- actions ---------- */
+let toastT;
+function flash(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2200)}
+function fixUrl(v){
+  v=v.trim();if(!v)return null;
+  if(!/^https?:\/\//i.test(v))v='https://'+v;
+  try{const u=new URL(v);return /^https?:$/.test(u.protocol)&&u.hostname.includes('.')?u.href:null}catch(e){return null}
+}
+function add(){
+  if(!st.canWrite){flash('Read-only on this device — unlock with a GitHub token to save');return}
+  const url=fixUrl($('#u').value);
+  if(!url){flash('Please enter a valid link');return}
+  const isC=ui.tab==='characters';
+  S.items.unshift({id:uid(),url,title:$('#n').value.trim(),sec:ui.tab,sub:isC?ui.sub:'',stars:ui.ns,added:Date.now()});
+  save();
+  $('#u').value='';$('#n').value='';ui.ns=0;$('#ns').innerHTML=stars(0,'new');
+  renderList();renderNav();renderPills();$('#u').focus();
+}
+function roll(){
+  ui.msg='';
+  const pool=S.items.filter(i=>ui.sel.has(bucket(i)));
+  if(!ui.sel.size||!pool.length){ui.pick=null;ui.msg=!ui.sel.size?'Select at least one section first.':'Nothing saved in the selected sections yet.';return showRes()}
+  const cand=pool.length>1?pool.filter(i=>i.id!==ui.pick):pool;
+  const win=cand[Math.floor(Math.random()*cand.length)],btn=$('#roll');
+  let n=0;btn.disabled=true;
+  const t=setInterval(()=>{
+    if(++n>=8){clearInterval(t);ui.pick=win.id;btn.disabled=false}
+    else ui.pick=pool[Math.floor(Math.random()*pool.length)].id;
+    showRes();
+  },70);
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-tab],[data-sub],[data-star],[data-move],[data-del],[data-sel],#add,#roll,#go,#gen,#lock,#forget');
+  if(!b)return;const d=b.dataset;
+  if(!st.canWrite&&(d.star||d.move||d.del||b.id==='add')&&b.id!=='go'){flash('Read-only on this device — unlock with a GitHub token to save');return}
+  if(d.tab){ui.tab=d.tab;ui.q='';ui.del=null;render()}
+  else if(d.sub){ui.sub=d.sub;render()}
+  else if(d.star){
+    const k=+d.star;
+    if(d.id==='new'){ui.ns=ui.ns===k?0:k;$('#ns').innerHTML=stars(ui.ns,'new')}
+    else{const it=find(d.id);if(it){it.stars=it.stars===k?0:k;save();refresh()}}
+  }
+  else if(d.move){const it=find(d.move);if(it){it.sub=it.sub==='current'?'favorite':'current';save();renderList();renderPills();flash('Moved to '+(it.sub==='current'?'Current':'Favorite'))}}
+  else if(d.del){
+    if(ui.del===d.del){S.items=S.items.filter(i=>i.id!==d.del);ui.del=null;save();refresh();renderNav();renderPills()}
+    else{const id=d.del;ui.del=id;refresh();setTimeout(()=>{if(ui.del===id){ui.del=null;refresh()}},2500)}
+  }
+  else if(d.sel){ui.sel.has(d.sel)?ui.sel.delete(d.sel):ui.sel.add(d.sel);renderRandom()}
+  else if(b.id==='add')add();
+  else if(b.id==='roll')roll();
+  else if(b.id==='go')ui.mode==='create'?create():unlock();
+  else if(b.id==='gen')$('#pw').value=gen();
+  else if(b.id==='lock')lock();
+  else if(b.id==='forget'){localStorage.removeItem('lv.tok');localStorage.removeItem('lv.repo');location.reload()}
+});
+document.addEventListener('input',e=>{if(e.target.id==='q'){ui.q=e.target.value;renderList()}});
+document.addEventListener('change',e=>{if(e.target.id==='so'){ui.sort=e.target.value;renderList()}});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&['pw','tok','repo'].includes(e.target.id))ui.mode==='create'?create():unlock();if(e.key==='Enter'&&(e.target.id==='u'||e.target.id==='n'))add()});
+
+/* ---------- lock screen ---------- */
+const gate=h=>{$('#gate').innerHTML=h};
+const gerr=m=>{const e=$('#err');if(e)e.textContent=m};
+const busy=on=>{const b=$('#go');if(b){b.disabled=on;b.textContent=on?'Working…':(ui.mode==='create'?'Create vault':'Unlock')}};
+const repoOk=r=>/^[\w.-]+\/[\w.-]+$/.test(r);
+function detectRepo(){
+  const m=location.hostname.match(/^(.+)\.github\.io$/i);if(!m)return '';
+  const seg=location.pathname.split('/')[1];
+  return m[1]+'/'+(seg&&!seg.includes('.')?seg:m[1]+'.github.io');
+}
+function gen(){ // 25 chars from a 31-letter alphabet ≈ 124 bits of randomness
+  const A='abcdefghjkmnpqrstuvwxyz23456789',o=[];
+  while(o.length<25)for(const x of rnd(32))if(x<248&&o.length<25)o.push(A[x%31]);
+  return o.join('').match(/.{5}/g).join('-');
+}
+function showCreate(){
+  ui.mode='create';
+  gate(`<section class="panel"><h2>Create your encrypted vault</h2>
+  <div class="note">Everything is encrypted in this page (AES-256) before it goes to your GitHub repo. Your passphrase never leaves this device.</div>
+  <div class="row"><input id="repo" placeholder="GitHub repo (owner/name)" value="${esc(st.repo)}" autocomplete="off" spellcheck="false"></div>
+  <div class="row"><input id="tok" type="password" placeholder="GitHub token (this repo only · Contents: read &amp; write)" autocomplete="off"></div>
+  <div class="row"><input id="pw" class="mono" value="${esc(gen())}" autocomplete="off" spellcheck="false"><button class="mini" id="gen">New</button></div>
+  <div class="note">⚠️ That’s your passphrase (or type your own, 14+ characters). Save it in a password manager now — it can’t be recovered or reset.</div>
+  <button class="primary" id="go">Create vault</button><div class="err" id="err"></div></section>`);
+}
+function showUnlock(){
+  ui.mode='unlock';
+  const has=!!localStorage.getItem('lv.tok');
+  gate(`<section class="panel"><h2>🔒 Unlock</h2>
+  <div class="row"><input id="pw" type="password" placeholder="Passphrase" autocomplete="current-password"></div>
+  ${has?'':`<div class="note">Optional: add a GitHub token to save changes from this device. Without one it opens read-only.</div>
+  <div class="row"><input id="repo" placeholder="GitHub repo (owner/name)" value="${esc(st.repo)}" autocomplete="off" spellcheck="false"></div>
+  <div class="row"><input id="tok" type="password" placeholder="GitHub token (optional)" autocomplete="off"></div>`}
+  <button class="primary" id="go">Unlock</button><div class="err" id="err"></div></section>`);
+  $('#pw').focus();
+}
+async function boot(){
+  gate('<section class="panel"><div class="note">Checking…</div></section>');
+  try{
+    const r=await fetch('vault.json',{cache:'no-store'});
+    if(r.ok){const f=await r.json();if(f&&f.v===1&&f.data&&f.salt){st.file=f;return showUnlock()}}
+  }catch(e){}
+  if(localStorage.getItem('lv.tok'))gate('<section class="panel"><h2>Almost there</h2><div class="note">Your vault is saved in GitHub, but GitHub Pages is still publishing it. Reload this page in a minute or two.</div></section>');
+  else showCreate();
+}
+async function unlock(){
+  const pass=$('#pw').value;if(!pass)return;
+  busy(true);gerr('');
+  try{
+    const f=st.file;
+    st.salt=f.salt;st.iter=f.iter;
+    const key=await derive(pass,unb64(f.salt),f.iter);
+    let data;try{data=await openFile(f,key)}catch(e){gerr('Wrong passphrase.');return}
+    st.key=key;S=data;st.canWrite=false;ui.note='';
+    const rp=($('#repo')?$('#repo').value.trim():'')||localStorage.getItem('lv.repo')||st.repo;
+    let tok=$('#tok')?$('#tok').value.trim():'';
+    const stored=localStorage.getItem('lv.tok');
+    if(!tok&&stored){try{tok=dec.decode(await decB(key,stored,'lv-token'))}catch(e){}}
+    if(tok&&repoOk(rp)){
+      st.repo=rp;st.token=tok;
+      try{
+        const rem=await fetchRemote();
+        if(!rem)throw new Error('missing');
+        S=rem.data;st.sha=rem.sha;st.canWrite=true;
+        localStorage.setItem('lv.tok',await encB(key,enc.encode(tok),'lv-token'));
+        localStorage.setItem('lv.repo',rp);
+      }catch(e){st.token='';ui.note='Couldn’t reach GitHub with that token — opened read-only.'}
+    }
+    enterApp();
+  }catch(e){gerr('Something went wrong. Please try again.')}
+  finally{busy(false)}
+}
+async function create(){
+  const repo=$('#repo').value.trim(),tok=$('#tok').value.trim(),pass=$('#pw').value;
+  if(!repoOk(repo))return gerr('Enter the repo as owner/name.');
+  if(!tok)return gerr('Paste your GitHub token.');
+  if(pass.length<14)return gerr('Passphrase must be at least 14 characters.');
+  busy(true);gerr('');
+  try{
+    st.repo=repo;st.token=tok;st.iter=ITER;
+    const salt=rnd(16);st.salt=b64(salt);
+    st.key=await derive(pass,salt,ITER);
+    S={items:[],updated:Date.now()};
+    const r=await GH('vault.json',{method:'PUT',body:JSON.stringify({message:'vault update',content:btoa(JSON.stringify(await sealFile(S)))})});
+    if(r.status===422)return gerr('A vault already exists in this repo. Reload this page and unlock it instead.');
+    if(r.status===401||r.status===403||r.status===404)return gerr('GitHub rejected the token or repo name (the token needs Contents: read & write on that repo).');
+    if(!r.ok)return gerr('GitHub error '+r.status+'.');
+    st.sha=(await r.json()).content.sha;st.canWrite=true;ui.note='';
+    localStorage.setItem('lv.tok',await encB(st.key,enc.encode(tok),'lv-token'));
+    localStorage.setItem('lv.repo',repo);
+    enterApp();
+  }catch(e){gerr('Something went wrong — check your connection and try again.')}
+  finally{busy(false)}
+}
+function enterApp(){
+  $('#gate').hidden=true;$('#appbody').hidden=false;
+  stat(st.canWrite?'Encrypted & saved to GitHub ✓':(ui.note||'Read-only on this device'));
+  render();bump();
+}
+async function lock(){
+  clearTimeout(timer);
+  if(dirty)saving=saving.then(push);
+  await saving;
+  if(dirty&&!confirm('Some changes could not be sent to GitHub. Lock anyway?'))return;
+  location.reload();
+}
+let idle;
+function bump(){clearTimeout(idle);if(st.key)idle=setTimeout(lock,15*60*1000)}
+['click','keydown','touchstart'].forEach(t=>document.addEventListener(t,bump,{passive:true}));
+window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue=''}});
+st.repo=localStorage.getItem('lv.repo')||detectRepo();
+boot();
+})();
+</script>
+</body>
+</html>
