@@ -141,6 +141,7 @@ function pad(obj){ // pad to 4 KB blocks so the file size doesn't reveal how man
 async function sealFile(obj){
   const f={v:1,kdf:'PBKDF2-SHA512',iter:st.iter,salt:st.salt};
   f.data=await encB(st.key,pad(obj),hdr(f));
+  if(st.token)f.tok=await encB(st.key,enc.encode(st.token),'lv-token'); // GitHub token, encrypted with the same passphrase key
   return f;
 }
 async function openFile(f,key){
@@ -433,7 +434,7 @@ function gen(){ // 25 chars from a 31-letter alphabet ≈ 124 bits of randomness
 function showCreate(){
   ui.mode='create';
   gate(`<section class="panel"><h2>Create your encrypted vault</h2>
-  <div class="note">Everything is encrypted in this page (AES-256) before it goes to your GitHub repo. Your passphrase never leaves this device.</div>
+  <div class="note">Everything is encrypted in this page (AES-256) before it goes to your GitHub repo. Your passphrase never leaves this device. Your token is stored in the vault too (encrypted the same way), so any device only needs the passphrase.</div>
   <div class="row"><input id="repo" placeholder="GitHub repo (owner/name)" value="${esc(st.repo)}" autocomplete="off" spellcheck="false"></div>
   <div class="row"><input id="tok" type="password" placeholder="GitHub token (this repo only · Contents: read &amp; write)" autocomplete="off"></div>
   <div class="row"><input id="pw" class="mono" value="${esc(gen())}" autocomplete="off" spellcheck="false"><button class="mini" id="gen">New</button></div>
@@ -442,12 +443,12 @@ function showCreate(){
 }
 function showUnlock(){
   ui.mode='unlock';
-  const has=!!localStorage.getItem('lv.tok');
+  const has=!!localStorage.getItem('lv.tok')||!!(st.file&&st.file.tok);
   gate(`<section class="panel"><h2>🔒 Unlock</h2>${pendingAdd?`<div class="note" style="margin-top:0">📎 Unlock to add “${esc(String(pendingAdd.n||"this link").slice(0,80))}”.</div>`:''}
   <div class="row"><input id="pw" type="password" placeholder="Passphrase" autocomplete="current-password"></div>
-  ${has?'':`<div class="note">Optional: add a GitHub token to save changes from this device. Without one it opens read-only.</div>
-  <div class="row"><input id="repo" placeholder="GitHub repo (owner/name)" value="${esc(st.repo)}" autocomplete="off" spellcheck="false"></div>
-  <div class="row"><input id="tok" type="password" placeholder="GitHub token (optional)" autocomplete="off"></div>`}
+  ${has&&repoOk(st.repo)?'':`<div class="row"><input id="repo" placeholder="GitHub repo (owner/name)" value="${esc(st.repo)}" autocomplete="off" spellcheck="false"></div>`}
+  ${has?'':`<div class="note">Optional: add a GitHub token to save changes from this device. Without one it opens read-only.</div>`}
+  <div class="row"><input id="tok" type="password" placeholder="${has?'New GitHub token (leave blank to use the saved one)':'GitHub token (optional)'}" autocomplete="off"></div>
   <button class="primary" id="go">Unlock</button><div class="err" id="err"></div></section>`);
   $('#pw').focus();
 }
@@ -470,20 +471,30 @@ async function unlock(){
     let data;try{data=await openFile(f,key)}catch(e){gerr('Wrong passphrase.');return}
     st.key=key;S=data;st.canWrite=false;ui.note='';
     const rp=($('#repo')?$('#repo').value.trim():'')||localStorage.getItem('lv.repo')||st.repo;
-    let tok=$('#tok')?$('#tok').value.trim():'';
+    const typed=$('#tok')?$('#tok').value.trim():'';
+    const cands=[];
+    if(typed)cands.push(typed);
     const stored=localStorage.getItem('lv.tok');
-    if(!tok&&stored){try{tok=dec.decode(await decB(key,stored,'lv-token'))}catch(e){}}
-    if(tok&&repoOk(rp)){
-      st.repo=rp;st.token=tok;
-      try{
-        const rem=await fetchRemote();
-        if(!rem)throw new Error('missing');
-        S=rem.data;st.sha=rem.sha;st.canWrite=true;
-        localStorage.setItem('lv.tok',await encB(key,enc.encode(tok),'lv-token'));
-        localStorage.setItem('lv.repo',rp);
-      }catch(e){st.token='';ui.note='Couldn’t reach GitHub with that token — opened read-only.'}
+    if(stored){try{cands.push(dec.decode(await decB(key,stored,'lv-token')))}catch(e){}}
+    let vt='';
+    if(f.tok){try{vt=dec.decode(await decB(key,f.tok,'lv-token'));cands.push(vt)}catch(e){}}
+    let tok='',tried=false;
+    if(repoOk(rp)){
+      for(const c of [...new Set(cands)]){
+        tried=true;st.repo=rp;st.token=c;
+        try{
+          const rem=await fetchRemote();
+          if(!rem)throw new Error('missing');
+          S=rem.data;st.sha=rem.sha;st.canWrite=true;tok=c;break;
+        }catch(e){st.token=''}
+      }
     }
+    if(st.canWrite){
+      localStorage.setItem('lv.tok',await encB(key,enc.encode(tok),'lv-token'));
+      localStorage.setItem('lv.repo',rp);
+    }else if(tried)ui.note='Couldn’t reach GitHub with that token — opened read-only.';
     enterApp();
+    if(st.canWrite&&vt!==tok)save(); // first time on a device that has the token: copy it (encrypted) into the vault
   }catch(e){gerr('Something went wrong. Please try again.')}
   finally{busy(false)}
 }
